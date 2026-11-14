@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=3">
+</head>
+<body class="home-page">
+    <main class="checkout-page">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <div class="page-links">
+                <a href="{% url 'order' %}">Кошик</a>
+                <a href="{% url 'menu' %}">Меню</a>
+            </div>
+        </header>
+
+        <section class="checkout-card destination-card">
+            <span class="eyebrow">Оформлення</span>
+            <h1>Оформити замовлення</h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="messages">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+            {% if cart_items %}
+                <div class="checkout-layout">
+                    <form method="post" class="checkout-form">
+                        {% csrf_token %}
+                        <div class="checkout-section">
+                            <h2>Контактні дані</h2>
+                            <div class="checkout-form-grid">
+                                <div>
+                                    <label for="customer-name">Ім’я</label>
+                                    <input id="customer-name" name="customer_name" type="text" value="{{ customer_name }}" required>
+                                </div>
+                                <div>
+                                    <label for="phone">Телефон</label>
+                                    <input id="phone" name="phone" type="tel" value="{{ phone }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-section">
+                            <h2>Адреса доставки</h2>
+                            <label for="address">Вулиця, будинок, квартира</label>
+                            <input id="address" name="address" type="text" value="{{ delivery_address }}" placeholder="вул. Шевченка 12, кв. 5" required>
+
+                            <label for="comment">Коментар до замовлення</label>
+                            <textarea id="comment" name="comment" rows="4" placeholder="Наприклад: бажана часова доставка або уточнення до страв..."></textarea>
+                        </div>
+
+                        <div class="checkout-section">
+                            <h2>Спосіб оплати</h2>
+                            <div class="checkout-payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="cash" checked>
+                                    <span>Готівкою при отриманні</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="card">
+                                    <span>Карткою онлайн</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="checkout-submit">Підтвердити замовлення</button>
+                    </form>
+
+                    <aside class="checkout-summary">
+                        <div class="checkout-summary-header">
+                            <h2>Ваше замовлення</h2>
+                            <span>{{ cart_items|length }} позицій</span>
+                        </div>
+
+                        {% for item in cart_items %}
+                            <article class="checkout-summary-item">
+                                <div>
+                                    <h3>{{ item.dish.name }}</h3>
+                                    <p>{{ item.quantity }} × {{ item.dish.price }} ₴</p>
+                                </div>
+                                <strong>{{ item.line_total }} ₴</strong>
+                            </article>
+                        {% endfor %}
+
+                        <div class="checkout-summary-total">
+                            <span>Разом:</span>
+                            <strong>{{ cart_total }} ₴</strong>
+                        </div>
+                    </aside>
+                </div>
+            {% else %}
+                <p>Кошик поки порожній. Додайте страви, щоб оформити замовлення.</p>
+                <a class="back-home" href="{% url 'menu' %}">← До меню</a>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

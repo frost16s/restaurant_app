@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Історія замовлень — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=4">
+</head>
+<body class="home-page">
+    <main class="destination-page">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <a class="back-home" href="{% url 'home' %}">← На головну</a>
+        </header>
+
+        <section class="destination-card">
+            <span class="eyebrow">Restaurant</span>
+            <h1>Історія замовлень</h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="messages">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+            {% if orders %}
+                <div class="order-history-list">
+                    {% for order in orders %}
+                        <article class="order-history-item" aria-label="Замовлення №{{ order.id }}">
+                            <div class="order-history-header">
+                                <h2>Замовлення #{{ order.id }}</h2>
+                                <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+
+                            <div class="order-history-meta">
+                                <p><strong>Адреса:</strong> {{ order.address }}</p>
+                                <p><strong>Контакт:</strong> {{ order.customer_name }} · {{ order.phone }}</p>
+                                <p><strong>Оплата:</strong> {{ order.payment_method }}</p>
+                            </div>
+
+                            <ul class="order-history-dishes">
+                                {% for item in order.items.all %}
+                                    <li>
+                                        <span>{{ item.dish.name }} × {{ item.quantity }}</span>
+                                        <strong>{{ item.unit_price|floatformat:2 }} ₴</strong>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="order-history-footer">
+                                <strong>{{ order.total_price }} ₴</strong>
+                                <form method="post" action="{% url 'reorder_order' order.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="order-reorder-button">Замовити ще раз</button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>У вас ще немає оформлених замовлень.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

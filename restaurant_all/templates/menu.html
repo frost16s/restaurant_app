@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страви — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=3">
+</head>
+<body class="home-page">
+    <main class="destination-page">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <nav class="page-links" aria-label="Основна навігація">
+                <a href="{% url 'order' %}">Кошик</a>
+                <a href="{% url 'home' %}">На головну</a>
+            </nav>
+        </header>
+
+        <section class="menu-section">
+            <div class="menu-heading">
+                <div class="menu-heading-copy">
+                    <span class="eyebrow">Свіже та смачне</span>
+                    <h1>Страви</h1>
+                    <p class="menu-intro">Оберіть страву та додайте її до кошика.</p>
+                </div>
+                <details class="menu-category-picker" {% if selected_category %}open{% endif %}>
+                    <summary>Обрати категорію</summary>
+                    <nav class="menu-categories" aria-label="Категорії страв">
+                        <a
+                            class="menu-category{% if not selected_category %} menu-category--active{% endif %}"
+                            href="{% url 'menu' %}"
+                            {% if not selected_category %}aria-current="page"{% endif %}
+                        >Усі страви</a>
+                        {% for category_value, category_label in categories %}
+                            <a
+                                class="menu-category{% if selected_category == category_value %} menu-category--active{% endif %}"
+                                href="{% url 'menu' %}?category={{ category_value }}"
+                                {% if selected_category == category_value %}aria-current="page"{% endif %}
+                            >{{ category_label }}</a>
+                        {% endfor %}
+                    </nav>
+                </details>
+            </div>
+
+            {% for message in messages %}
+                <p class="messages">{{ message }}</p>
+            {% endfor %}
+
+            {% if dishes %}
+                <div class="dish-grid">
+                    {% for dish in dishes %}
+                        <article class="dish-card">
+                            <div class="dish-image-frame">
+                                {% if dish.image %}
+                                    <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
+                                {% else %}
+                                    <span class="dish-image-placeholder">Зображення страви</span>
+                                {% endif %}
+                            </div>
+                            <div class="dish-card-content">
+                                <h2>{{ dish.name }}</h2>
+                                <p class="dish-price">{{ dish.price }} ₴</p>
+                                <p class="dish-average-rating">
+                                    {% if dish.rating_count %}
+                                        <span aria-label="Середня оцінка {{ dish.average_rating|floatformat:1 }} з 5">
+                                            ★ {{ dish.average_rating|floatformat:1 }} / 5
+                                        </span>
+                                        <span class="dish-rating-count">({{ dish.rating_count }} оцінок)</span>
+                                    {% else %}
+                                        Ще немає оцінок
+                                    {% endif %}
+                                </p>
+                                <a class="recipe-link" href="{% url 'dish_detail' dish.pk %}">
+                                    Опис та рецепт
+                                </a>
+                                {% if dish.is_available %}
+                                    <p class="dish-availability dish-availability--available">Є в наявності</p>
+                                {% else %}
+                                    <p class="dish-availability dish-availability--unavailable">Немає в наявності</p>
+                                {% endif %}
+                                <form method="post" action="{% url 'add_to_cart' dish.pk %}">
+                                    {% csrf_token %}
+                                    <button class="add-to-cart-button" type="submit" {% if not dish.is_available %}disabled{% endif %}>
+                                        Додати до кошика
+                                    </button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="destination-card menu-empty">
+                    {% if selected_category %}
+                        <h2>У цій категорії поки немає страв</h2>
+                        <p>Оберіть іншу категорію або перегляньте всі страви.</p>
+                        <a class="back-home" href="{% url 'menu' %}">Показати всі страви</a>
+                    {% else %}
+                        <h2>Страв поки немає</h2>
+                        <p>Додайте страви через адміністративну панель, щоб вони з’явилися тут.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

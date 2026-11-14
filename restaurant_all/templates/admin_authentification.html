@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адміністратор — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}">
+</head>
+<body>
+    <main>
+        <header class="intro">
+            <span class="eyebrow">Restaurant</span>
+            <h1>Адміністратор</h1>
+            <p>Увійдіть до панелі керування.</p>
+        </header>
+
+        <div class="forms">
+            <section aria-labelledby="admin-login-heading">
+                <h2 id="admin-login-heading">Вхід</h2>
+                <p class="hint">Введіть нікнейм та пароль superuser.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="login">
+                    {% for field in login_form %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    {% endfor %}
+                    {% for error in login_form.non_field_errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    <button type="submit">Увійти</button>
+                </form>
+            </section>
+
+            {% if registration_open %}
+                <section aria-labelledby="admin-register-heading">
+                    <h2 id="admin-register-heading">Створити superuser</h2>
+                    <p class="hint">Реєстрація доступна лише до створення першого адміністратора.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="register">
+                        {% for field in registration_form %}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                        {% endfor %}
+                        {% for error in registration_form.non_field_errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                        <button type="submit">Створити superuser</button>
+                    </form>
+                </section>
+            {% endif %}
+        </div>
+
+        <a class="admin-login" href="{% url 'auth' %}">Повернутися до входу користувачів</a>
+    </main>
+</body>
+</html>

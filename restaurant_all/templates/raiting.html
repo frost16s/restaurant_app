@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рейтинг страв — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=6">
+</head>
+<body class="home-page">
+    <main class="destination-page">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <div class="account">
+                <span class="account-name">{{ display_name }}</span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="logout-link" type="submit">Вийти з акаунта</button>
+                </form>
+            </div>
+        </header>
+
+        <section class="destination-card rating-card">
+            <span class="eyebrow">Вибір гостей</span>
+            <h1>Рейтинг страв</h1>
+            <p>Оцініть страви від 1 до 5 зірок і перегляньте найулюбленіші позиції.</p>
+
+            {% for message in messages %}
+                <p class="messages">{{ message }}</p>
+            {% endfor %}
+
+            <form class="rating-filter" method="get">
+                <label for="rating-filter">Показати страви з оцінкою не нижче:</label>
+                <select id="rating-filter" name="rating">
+                    <option value="" {% if not selected_rating %}selected{% endif %}>Усі страви</option>
+                    <option value="5" {% if selected_rating == "5" %}selected{% endif %}>5 зірок</option>
+                    <option value="4" {% if selected_rating == "4" %}selected{% endif %}>4+ зірки</option>
+                    <option value="3" {% if selected_rating == "3" %}selected{% endif %}>3+ зірки</option>
+                    <option value="2" {% if selected_rating == "2" %}selected{% endif %}>2+ зірки</option>
+                    <option value="1" {% if selected_rating == "1" %}selected{% endif %}>1+ зірка</option>
+                </select>
+                <button type="submit">Фільтрувати</button>
+            </form>
+
+            {% if dishes %}
+                <div class="dish-grid rating-dish-grid">
+                    {% for dish in dishes %}
+                        <article class="dish-card rating-dish-card">
+                            <div class="dish-image-frame">
+                                {% if dish.image %}
+                                    <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
+                                {% else %}
+                                    <span class="dish-image-placeholder">Зображення страви</span>
+                                {% endif %}
+                            </div>
+                            <div class="dish-card-content">
+                                <h2>{{ dish.name }}</h2>
+                                <p class="dish-price">{{ dish.price }} ₴</p>
+                                <p class="dish-average-rating">
+                                    {% if dish.rating_count %}
+                                        <span aria-label="Середня оцінка {{ dish.average_rating|floatformat:1 }} з 5">
+                                            ★ {{ dish.average_rating|floatformat:1 }} / 5
+                                        </span>
+                                        <span class="dish-rating-count">({{ dish.rating_count }} оцінок)</span>
+                                    {% else %}
+                                        Ще немає оцінок
+                                    {% endif %}
+                                </p>
+                                <form class="dish-rating-form" method="post" action="{% url 'rate_dish' dish.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="rating_filter" value="{{ selected_rating }}">
+                                    {% if dish.user_rating %}
+                                        <p class="user-rating">Ваша оцінка: {{ dish.user_rating }} ★</p>
+                                    {% endif %}
+                                    <details class="rating-picker">
+                                        <summary class="rating-picker-button">
+                                            <span>Вибрати оцінку</span>
+                                        </summary>
+                                        <div class="rating-options">
+                                            {% for score in rating_options %}
+                                                <button
+                                                    class="rating-option{% if dish.user_rating == score %} rating-option--selected{% endif %}"
+                                                    type="submit"
+                                                    name="score"
+                                                    value="{{ score }}"
+                                                    aria-label="Оцінити на {{ score }} зірок"
+                                                >
+                                                    <span class="rating-option-stars" aria-hidden="true">
+                                                        {% for star in rating_options %}{% if star <= score %}★{% endif %}{% endfor %}
+                                                    </span>
+                                                    <span>{{ score }} {% if score == 1 %}зірка{% else %}зірок{% endif %}</span>
+                                                </button>
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="rating-empty">
+                    <span class="rating-empty-star" aria-hidden="true">☆</span>
+                    <h2>{% if selected_rating %}Страв із такою оцінкою поки немає{% else %}Оцінок поки немає{% endif %}</h2>
+                    <p>Оцініть страву або змініть фільтр, щоб побачити рейтинг.</p>
+                </div>
+            {% endif %}
+            <a class="back-home" href="{% url 'home' %}">← На головну</a>
+        </section>
+    </main>
+</body>
+</html>

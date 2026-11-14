@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}">
+</head>
+<body>
+    <main>
+        <header class="intro">
+            <span class="eyebrow">Restaurant</span>
+            <h1>Раді вас бачити</h1>
+            <p>Увійдіть або створіть обліковий запис, щоб продовжити.</p>
+        </header>
+
+        {% for message in messages %}
+            <p class="messages">{{ message }}</p>
+        {% endfor %}
+
+        <div class="forms">
+            <section aria-labelledby="register-heading">
+                <h2 id="register-heading">Створити акаунт</h2>
+                <p class="hint">Заповніть дані, щоб розпочати.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="register">
+                    {% for field in registration_form %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    {% endfor %}
+                    {% for error in registration_form.non_field_errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    <button type="submit">Зареєструватися</button>
+                </form>
+            </section>
+
+            <section aria-labelledby="login-heading">
+                <h2 id="login-heading">Увійти</h2>
+                <p class="hint">Використайте адресу електронної пошти або номер телефону.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="login">
+                    {% for field in login_form %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    {% endfor %}
+                    {% for error in login_form.non_field_errors %}<p class="errors">{{ error }}</p>{% endfor %}
+                    <button type="submit">Увійти</button>
+                </form>
+                <a class="admin-login" href="{% url 'admin_authentification' %}">
+                    Вхід для адміністраторів
+                </a>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

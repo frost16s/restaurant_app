@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кошик — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=2">
+</head>
+<body class="home-page">
+    <main class="destination-page">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <a class="back-home" href="{% url 'menu' %}">← До меню</a>
+        </header>
+        <section class="destination-card">
+            <span class="eyebrow">Ваш вибір</span>
+            <h1>Кошик</h1>
+            {% for message in messages %}
+                <p class="messages">{{ message }}</p>
+            {% endfor %}
+            {% if cart_items %}
+                <button
+                    class="cart-edit-toggle"
+                    id="cart-edit-toggle"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="cart-items"
+                >
+                    Редагувати кошик
+                </button>
+                <p class="cart-update-error" id="cart-update-error" role="status" aria-live="polite"></p>
+                <div class="cart-items">
+                    {% for item in cart_items %}
+                        <article class="cart-item">
+                            <div>
+                                <h2>{{ item.dish.name }}</h2>
+                                <p>
+                                    <span data-item-quantity>{{ item.quantity }}</span>
+                                    × {{ item.dish.price }} ₴
+                                </p>
+                            </div>
+                            <div class="cart-item-end">
+                                <strong><span data-line-total>{{ item.line_total }}</span> ₴</strong>
+                                <div class="cart-item-controls" hidden>
+                                    <form method="post" action="{% url 'update_cart_item' item.dish.pk %}" data-cart-change-form>
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delta" value="-1">
+                                        <button
+                                            class="cart-quantity-button"
+                                            type="submit"
+                                            aria-label="Зменшити кількість: {{ item.dish.name }}"
+                                        >−</button>
+                                    </form>
+                                    <form method="post" action="{% url 'update_cart_item' item.dish.pk %}" data-cart-change-form>
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delta" value="1">
+                                        <button
+                                            class="cart-quantity-button"
+                                            type="submit"
+                                            aria-label="Збільшити кількість: {{ item.dish.name }}"
+                                        >+</button>
+                                    </form>
+                                    <form method="post" action="{% url 'remove_cart_item' item.dish.pk %}">
+                                        {% csrf_token %}
+                                        <button class="cart-remove-button" type="submit">Видалити</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <p class="cart-total">Разом: <strong><span id="cart-total">{{ cart_total }}</span> ₴</strong></p>
+                <a class="checkout-button" href="{% url 'create_order' %}">Перейти до оформлення замовлення</a>
+            {% else %}
+                <p>Кошик поки порожній. Перейдіть до меню та додайте страви.</p>
+            {% endif %}
+            <a class="back-home" href="{% url 'home' %}">← На головну</a>
+        </section>
+    </main>
+    {% if cart_items %}
+        <script>
+            var editToggle = document.getElementById("cart-edit-toggle");
+            var cartTotal = document.getElementById("cart-total");
+            var updateError = document.getElementById("cart-update-error");
+            var cartItems = document.querySelector(".cart-items");
+
+            editToggle.addEventListener("click", () => {
+                var editing = editToggle.getAttribute("aria-expanded") === "false";
+                editToggle.setAttribute("aria-expanded", String(editing));
+                editToggle.textContent = editing ? "Завершити редагування" : "Редагувати кошик";
+                cartItems.querySelectorAll(".cart-item-controls").forEach((controls) => {
+                    controls.hidden = !editing;
+                });
+            });
+
+            cartItems.addEventListener("submit", async (event) => {
+                var form = event.target.closest("[data-cart-change-form]");
+                if (!form) return;
+
+                event.preventDefault();
+                var submitButton = form.querySelector("button");
+                submitButton.disabled = true;
+                updateError.textContent = "";
+                try {
+                    var response = await fetch(form.action, {
+                        method: "POST",
+                        headers: {"X-Requested-With": "XMLHttpRequest"},
+                        body: new FormData(form),
+                    });
+                    var data = await response.json();
+                    if (response.ok) {
+                        form.closest(".cart-item").querySelector("[data-item-quantity]").textContent = data.quantity;
+                        form.closest(".cart-item").querySelector("[data-line-total]").textContent = data.line_total;
+                        cartTotal.textContent = data.cart_total;
+                    } else {
+                        updateError.textContent = data.error || "Не вдалося оновити кошик.";
+                    }
+                } catch (error) {
+                    updateError.textContent = error.message || "Не вдалося оновити кошик.";
+                } finally {
+                    submitButton.disabled = false;
+                }
+            });
+        </script>
+    {% endif %}
+</body>
+</html>

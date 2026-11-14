@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Головна — Restaurant</title>
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}">
+</head>
+<body class="home-page">
+    <main class="home-shell">
+        <header class="home-header">
+            <a class="brand" href="{% url 'home' %}">Restaurant</a>
+            <div class="account">
+                <span class="account-name">{{ display_name }}</span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="logout-link" type="submit">Вийти з акаунта</button>
+                </form>
+            </div>
+        </header>
+        <section class="home-hero" aria-labelledby="home-title">
+            <span class="eyebrow">Смачно. Зручно. Для вас.</span>
+            <h1 id="home-title">Вітаємо, {{ greeting_name }}!</h1>
+            <p>Оберіть, що бажаєте зробити.</p>
+
+            <nav class="home-actions" aria-label="Навігація рестораном">
+                <a class="home-action" href="{% url 'menu' %}">
+                    <span class="action-number">01</span>
+                    <span class="action-title">Страви</span>
+                    <span class="action-description">Переглянути меню</span>
+                    <span class="action-arrow" aria-hidden="true">→</span>
+                </a>
+                
+                <a class="home-action" href="{% url 'order' %}">
+                    <span class="action-number">02</span>
+                    <span class="action-title">Кошик</span>
+                    <span class="action-description">Переглянути замовлення</span>
+                    <span class="action-arrow" aria-hidden="true">→</span>
+                </a>
+
+                <a class="home-action home-action-primary" href="{% url 'create_order' %}">
+                    <span class="action-number">03</span>
+                    <span class="action-title">Оформити замовлення</span>
+                    <span class="action-description">Перейти до оформлення</span>
+                    <span class="action-arrow" aria-hidden="true">→</span>
+                </a>
+
+                <a class="home-action" href="{% url 'order_history' %}">
+                    <span class="action-number">04</span>
+                    <span class="action-title">Історія замовлень</span>
+                    <span class="action-description">Переглянути попередні замовлення</span>
+                    <span class="action-arrow" aria-hidden="true">→</span>
+                </a>
+
+                <a class="home-action" href="{% url 'raiting' %}">
+                    <span class="action-number">05</span>
+                    <span class="action-title">Рейтинг</span>
+                    <span class="action-description">Переглянути рейтинг страв</span>
+                    <span class="action-arrow" aria-hidden="true">→</span>
+                </a>
+            </nav>
+        </section>
+    </main>
+</body>
+</html>

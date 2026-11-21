@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Рейтинг страв — Restaurant</title>
-    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=8">
 </head>
 <body class="home-page">
     <main class="destination-page">
@@ -41,6 +41,23 @@
                 </select>
                 <button type="submit">Фільтрувати</button>
             </form>
+
+            <details class="dish-comment-picker">
+                <summary class="dish-comment-button">Додати відгук</summary>
+                <form class="dish-comment-form" method="post" action="{% url 'comment_dish' %}">
+                    {% csrf_token %}
+                    <label for="comment-dish-id">Оберіть страву</label>
+                    <select id="comment-dish-id" name="dish_id" required>
+                        <option value="" selected disabled>Виберіть страву...</option>
+                        {% for dish in dishes %}
+                            <option value="{{ dish.pk }}">{{ dish.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="dish-comment-text">Ваш відгук</label>
+                    <textarea id="dish-comment-text" name="comment" rows="4" maxlength="1000" required placeholder="Поділіться враженнями про страву..."></textarea>
+                    <button type="submit">Зберегти відгук</button>
+                </form>
+            </details>
 
             {% if dishes %}
                 <div class="dish-grid rating-dish-grid">
@@ -94,6 +111,17 @@
                                         </div>
                                     </details>
                                 </form>
+                                {% if dish.comments %}
+                                    <div class="dish-comments">
+                                        <h3>Відгуки</h3>
+                                        {% for review in dish.comments %}
+                                            <article class="dish-comment">
+                                                <strong>{{ review.user.get_full_name|default:review.user.get_username }}</strong>
+                                                <p>{{ review.comment|linebreaksbr }}</p>
+                                            </article>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                             </div>
                         </article>
                     {% endfor %}

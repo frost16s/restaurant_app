@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -139,10 +139,14 @@ def menu_page(request):
 
     dishes = Dish.objects.annotate(
         average_rating=Avg("ratings__score"),
-        rating_count=Count("ratings"),
+        rating_count=Count(
+            "ratings",
+            filter=Q(ratings__score__isnull=False),
+        ),
     )
     if selected_category:
         dishes = dishes.filter(category=selected_category)
+    dishes = dishes.prefetch_related("ratings__user")
 
     return render(
         request,
@@ -396,17 +400,28 @@ def raiting_page(request):
 
     dishes = Dish.objects.annotate(
         average_rating=Avg("ratings__score"),
-        rating_count=Count("ratings"),
+        rating_count=Count(
+            "ratings",
+            filter=Q(ratings__score__isnull=False),
+        ),
     )
     if selected_rating:
         dishes = dishes.filter(average_rating__gte=int(selected_rating))
 
-    user_ratings = dict(
-        DishRating.objects.filter(user=user).values_list("dish_id", "score")
-    )
     dishes = list(dishes)
+    ratings_by_dish = {}
+    for rating in DishRating.objects.filter(dish__in=dishes).select_related("user"):
+        ratings_by_dish.setdefault(rating.dish_id, []).append(rating)
     for dish in dishes:
-        dish.user_rating = user_ratings.get(dish.pk)
+        dish.user_rating = None
+        dish.user_comment = ""
+        dish.comments = []
+        for current_rating in ratings_by_dish.get(dish.pk, []):
+            if current_rating.user_id == user.pk:
+                dish.user_rating = current_rating.score
+                dish.user_comment = current_rating.comment
+            if current_rating.comment.strip():
+                dish.comments.append(current_rating)
 
     return render(
         request,
@@ -428,25 +443,65 @@ def rate_dish(request, dish_id):
     if rating_filter not in {"", "1", "2", "3", "4", "5"}:
         rating_filter = ""
 
+    comment = request.POST.get("comment", "").strip()
     try:
         score = int(request.POST.get("score", ""))
     except (TypeError, ValueError):
         score = 0
 
-    if score not in range(1, 6):
+    if score not in range(1, 6) and not comment:
         messages.error(request, "Оберіть оцінку від 1 до 5 зірок.")
     else:
-        DishRating.objects.update_or_create(
-            user=request.user,
-            dish=dish,
-            defaults={"score": score},
-        )
-        messages.success(request, f"Оцінку для «{dish.name}» збережено.")
+        if score in range(1, 6):
+            rating, _ = DishRating.objects.get_or_create(
+                user=request.user,
+                dish=dish,
+            )
+            rating.score = score
+            if comment:
+                rating.comment = comment
+            rating.save(update_fields=["score", "comment"])
+        else:
+            rating, _ = DishRating.objects.get_or_create(
+                user=request.user,
+                dish=dish,
+            )
+            rating.comment = comment
+            rating.save(update_fields=["comment"])
+        if comment:
+            messages.success(request, f"Відгук для «{dish.name}» збережено.")
+        else:
+            messages.success(request, f"Оцінку для «{dish.name}» збережено.")
 
     redirect_url = reverse("raiting")
     if rating_filter:
         redirect_url = f"{redirect_url}?rating={rating_filter}"
     return redirect(redirect_url)
+
+
+@login_required
+@require_POST
+def comment_dish(request, dish_id=None):
+    if dish_id is None:
+        try:
+            dish_id = int(request.POST.get("dish_id", ""))
+        except (TypeError, ValueError):
+            dish_id = 0
+
+    dish = get_object_or_404(Dish, pk=dish_id)
+    comment = request.POST.get("comment", "").strip()
+    if not comment:
+        messages.error(request, "Напишіть текст відгуку.")
+        return redirect("raiting")
+
+    rating, _ = DishRating.objects.get_or_create(
+        user=request.user,
+        dish=dish,
+    )
+    rating.comment = comment
+    rating.save(update_fields=["comment"])
+    messages.success(request, f"Відгук для «{dish.name}» збережено.")
+    return redirect("raiting")
 
 
 @require_POST

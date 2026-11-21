@@ -88,7 +88,8 @@ class DishRating(models.Model):
         on_delete=models.CASCADE,
         related_name="ratings",
     )
-    score = models.PositiveSmallIntegerField()
+    score = models.PositiveSmallIntegerField(blank=True, null=True)
+    comment = models.TextField(blank=True, default="")
 
     class Meta:
         constraints = [

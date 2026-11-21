@@ -474,6 +474,46 @@ button:hover {
     font-size: 13px;
     font-weight: 400;
 }
+.dish-rating-reviews {
+    margin: 8px 0 12px;
+}
+.dish-rating-reviews > summary.dish-average-rating {
+    margin: 0;
+    cursor: pointer;
+    list-style: none;
+}
+.dish-rating-reviews > summary.dish-average-rating::-webkit-details-marker {
+    display: none;
+}
+.dish-rating-reviews > summary.dish-average-rating::after {
+    content: "＋";
+    float: right;
+    color: #a55332;
+}
+.dish-rating-reviews[open] > summary.dish-average-rating::after {
+    content: "−";
+}
+.dish-review-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+.dish-review {
+    padding: 9px 10px;
+    border: 1px solid #eee7de;
+    border-radius: 8px;
+    background: #faf7f2;
+}
+.dish-review strong {
+    color: #332c25;
+    font-size: 12px;
+}
+.dish-review p {
+    margin: 3px 0 0;
+    color: #716d66;
+    font-size: 13px;
+    line-height: 1.45;
+}
 .recipe-link {
     display: inline-block;
     margin: 2px 0 0;
@@ -774,6 +814,106 @@ details.rating-picker[open] > summary.rating-picker-button::after {
 }
 .dish-rating-form {
     margin: 0;
+}
+.dish-comment-picker {
+    position: relative;
+    width: fit-content;
+    margin-top: 18px;
+}
+.dish-comment-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 2px solid #874126;
+    border-radius: 10px;
+    background: #a55332;
+    box-shadow: 0 3px 0 #874126;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+}
+.dish-comment-button::-webkit-details-marker {
+    display: none;
+}
+.dish-comment-button::after {
+    content: "＋";
+    margin-left: 10px;
+}
+.dish-comment-picker[open] .dish-comment-button::after {
+    content: "−";
+}
+.dish-comment-form {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 10px);
+    left: 0;
+    display: grid;
+    gap: 8px;
+    width: min(390px, calc(100vw - 40px));
+    padding: 16px;
+    border: 1px solid #e8e2d8;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(59, 43, 28, .16);
+}
+.dish-comment-form label {
+    font-size: 13px;
+    font-weight: 700;
+}
+.dish-comment-form select,
+.dish-comment-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ddcfc2;
+    border-radius: 8px;
+    background: #fff;
+    color: #332c25;
+}
+.dish-comment-form select {
+    min-height: 42px;
+    padding: 8px 10px;
+}
+.dish-comment-form textarea {
+    resize: vertical;
+    padding: 10px;
+}
+.dish-comment-form button {
+    justify-self: start;
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #a55332;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+}
+.dish-comments {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee7de;
+}
+.dish-comments h3 {
+    margin: 0;
+    font-size: 14px;
+}
+.dish-comment {
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: #faf7f2;
+}
+.dish-comment strong {
+    font-size: 12px;
+}
+.dish-comment p {
+    margin: 3px 0 0;
+    color: #716d66;
+    font-size: 13px;
+    line-height: 1.45;
 }
 .rating-filter button {
     padding: 9px 13px;

@@ -53,6 +53,8 @@ urlpatterns = [
         name='reorder_order',
     ),
     path('raiting/', views.raiting_page, name='raiting'),
+    path('raiting/comment/', views.comment_dish, name='comment_dish'),
+    path('raiting/comment/<int:dish_id>/', views.comment_dish, name='comment_dish_for'),
     path('raiting/<int:dish_id>/', views.rate_dish, name='rate_dish'),
 ]
 

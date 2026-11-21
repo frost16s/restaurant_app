@@ -84,6 +84,61 @@ class AuthenticationFlowTests(TestCase):
             get_user_model().objects.filter(email="second-admin@example.com").exists()
         )
 
+    def test_admin_can_edit_and_delete_dish_ratings(self):
+        admin_user = get_user_model().objects.create_superuser(
+            username="Admin",
+            email="admin@example.com",
+            password="B0b!C4t#R8v$M2x",
+        )
+        guest = get_user_model().objects.create_user(
+            username="guest@example.com",
+            email="guest@example.com",
+            password="B0b!C4t#R8v$M2x",
+        )
+        dish = Dish.objects.create(
+            name="Борщ",
+            description="Домашній рецепт",
+            price="120.00",
+        )
+        rating = DishRating.objects.create(
+            user=guest,
+            dish=dish,
+            score=3,
+            comment="Потрібно відредагувати",
+        )
+        self.client.force_login(admin_user)
+
+        changelist_url = reverse("admin:restaurant_all_dishrating_changelist")
+        response = self.client.get(changelist_url)
+        self.assertContains(response, "Борщ")
+        self.assertContains(response, "Потрібно відредагувати")
+
+        change_url = reverse(
+            "admin:restaurant_all_dishrating_change",
+            args=[rating.pk],
+        )
+        response = self.client.post(
+            change_url,
+            {
+                "dish": dish.pk,
+                "user": guest.pk,
+                "score": "5",
+                "comment": "Відгук виправлено",
+            },
+        )
+        self.assertRedirects(response, changelist_url)
+        rating.refresh_from_db()
+        self.assertEqual(rating.score, 5)
+        self.assertEqual(rating.comment, "Відгук виправлено")
+
+        delete_url = reverse(
+            "admin:restaurant_all_dishrating_delete",
+            args=[rating.pk],
+        )
+        response = self.client.post(delete_url, {"post": "yes"})
+        self.assertRedirects(response, changelist_url)
+        self.assertFalse(DishRating.objects.filter(pk=rating.pk).exists())
+
     def test_admin_login_requires_superuser(self):
         get_user_model().objects.create_user(
             username="regular@example.com",
@@ -214,6 +269,33 @@ class AuthenticationFlowTests(TestCase):
         self.assertContains(response, reverse("add_to_cart", args=[dish.pk]))
         self.assertContains(response, "Ще немає оцінок")
 
+    def test_menu_rating_can_expand_written_review(self):
+        dish = Dish.objects.create(
+            name="Борщ",
+            description="Домашній рецепт",
+            price="120.00",
+        )
+        guest = get_user_model().objects.create_user(
+            username="guest@example.com",
+            email="guest@example.com",
+            password="B0b!C4t#R8v$M2x",
+            first_name="Марія",
+        )
+        DishRating.objects.create(
+            user=guest,
+            dish=dish,
+            score=5,
+            comment="Дуже смачний борщ!",
+        )
+
+        self.client.post("/", self.registration_data)
+        response = self.client.get(reverse("menu"))
+
+        self.assertContains(response, "dish-rating-reviews")
+        self.assertContains(response, "★ 5.0 / 5")
+        self.assertContains(response, "(1 оцінок)")
+        self.assertContains(response, "Дуже смачний борщ!")
+
     def test_rating_can_be_added_and_updated_by_user(self):
         dish = Dish.objects.create(
             name="Борщ",
@@ -253,6 +335,26 @@ class AuthenticationFlowTests(TestCase):
 
         self.assertContains(response, "Оберіть оцінку від 1 до 5 зірок.")
         self.assertFalse(DishRating.objects.filter(dish=dish).exists())
+
+    def test_comment_can_be_added_for_selected_dish_and_displayed(self):
+        dish = Dish.objects.create(
+            name="Борщ",
+            description="Домашній рецепт",
+            price="120.00",
+        )
+        self.client.post("/", self.registration_data)
+
+        response = self.client.post(
+            reverse("comment_dish"),
+            {"dish_id": str(dish.pk), "comment": "Дуже смачний борщ!"},
+        )
+
+        self.assertRedirects(response, reverse("raiting"))
+        rating = DishRating.objects.get(dish=dish)
+        self.assertEqual(rating.comment, "Дуже смачний борщ!")
+        rating_page = self.client.get(reverse("raiting"))
+        self.assertContains(rating_page, "Додати відгук")
+        self.assertContains(rating_page, "Дуже смачний борщ!")
 
     def test_rating_filter_uses_average_and_menu_displays_it(self):
         highest = Dish.objects.create(

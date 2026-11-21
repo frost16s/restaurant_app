@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Страви — Restaurant</title>
-    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'restaurant_all/style.css' %}?v=9">
 </head>
 <body class="home-page">
     <main class="destination-page">
@@ -61,16 +61,31 @@
                             <div class="dish-card-content">
                                 <h2>{{ dish.name }}</h2>
                                 <p class="dish-price">{{ dish.price }} ₴</p>
-                                <p class="dish-average-rating">
-                                    {% if dish.rating_count %}
-                                        <span aria-label="Середня оцінка {{ dish.average_rating|floatformat:1 }} з 5">
-                                            ★ {{ dish.average_rating|floatformat:1 }} / 5
-                                        </span>
-                                        <span class="dish-rating-count">({{ dish.rating_count }} оцінок)</span>
-                                    {% else %}
-                                        Ще немає оцінок
-                                    {% endif %}
-                                </p>
+                                {% if dish.rating_count %}
+                                    <details class="dish-rating-reviews">
+                                        <summary class="dish-average-rating">
+                                            <span aria-label="Середня оцінка {{ dish.average_rating|floatformat:1 }} з 5">
+                                                ★ {{ dish.average_rating|floatformat:1 }} / 5
+                                            </span>
+                                            <span class="dish-rating-count">({{ dish.rating_count }} оцінок)</span>
+                                        </summary>
+                                        <div class="dish-review-list">
+                                            {% for review in dish.ratings.all %}
+                                                {% if review.comment %}
+                                                    <article class="dish-review">
+                                                        <strong>
+                                                            {{ review.user.get_full_name|default:review.user.get_username }}
+                                                            {% if review.score %}· {{ review.score }} ★{% endif %}
+                                                        </strong>
+                                                        <p>{{ review.comment|linebreaksbr }}</p>
+                                                    </article>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                {% else %}
+                                    <p class="dish-average-rating">Ще немає оцінок</p>
+                                {% endif %}
                                 <a class="recipe-link" href="{% url 'dish_detail' dish.pk %}">
                                     Опис та рецепт
                                 </a>

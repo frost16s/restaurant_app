@@ -15,7 +15,7 @@
         </header>
         <article class="destination-card dish-detail">
             {% if dish.image %}
-                <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
+                <img src="{% static 'media/' %}{{ dish.image.name }}" alt="{{ dish.name }}">
             {% endif %}
             <span class="eyebrow">Опис та рецепт</span>
             <h1>{{ dish.name }}</h1>

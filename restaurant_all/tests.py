@@ -267,7 +267,7 @@ class AuthenticationFlowTests(TestCase):
         self.assertContains(response, "Борщ")
         self.assertContains(
             response,
-            f'src="{settings.MEDIA_URL}dish_images/Banosh.webp"',
+            f'src="{settings.STATIC_URL}media/dish_images/Banosh.webp"',
         )
         self.assertContains(response, "120.00")
         self.assertContains(response, "Є в наявності")

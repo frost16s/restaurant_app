@@ -65,7 +65,7 @@
                         <article class="dish-card rating-dish-card">
                             <div class="dish-image-frame">
                                 {% if dish.image %}
-                                    <img src="{{ dish.image.url }}" alt="{{ dish.name }}">
+                                    <img src="{% static 'media/' %}{{ dish.image.name }}" alt="{{ dish.name }}">
                                 {% else %}
                                     <span class="dish-image-placeholder">Зображення страви</span>
                                 {% endif %}

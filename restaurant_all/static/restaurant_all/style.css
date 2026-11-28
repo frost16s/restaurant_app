@@ -430,6 +430,10 @@ button:hover {
     box-shadow: 0 14px 34px rgba(59, 43, 28, .07);
     transition: transform .18s ease, box-shadow .18s ease;
 }
+.menu-dish-card {
+    display: flex;
+    flex-direction: column;
+}
 .dish-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 18px 40px rgba(59, 43, 28, .12);
@@ -453,6 +457,11 @@ button:hover {
 }
 .dish-card-content {
     padding: 18px;
+}
+.menu-dish-card .dish-card-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
 }
 .dish-card-content h2 {
     margin: 0;
@@ -539,6 +548,9 @@ button:hover {
 .dish-card-content form,
 .dish-detail form {
     margin: 0;
+}
+.menu-dish-card .dish-card-content form {
+    margin-top: auto;
 }
 .add-to-cart-button {
     width: 100%;

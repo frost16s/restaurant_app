@@ -302,6 +302,32 @@ class AuthenticationFlowTests(TestCase):
         self.assertContains(response, "(1 оцінок)")
         self.assertContains(response, "Дуже смачний борщ!")
 
+    def test_menu_limits_dish_card_to_two_latest_comments(self):
+        dish = Dish.objects.create(
+            name="Борщ",
+            description="Домашній рецепт",
+            price="120.00",
+        )
+        for index, comment in enumerate(("", "Відгук 1", "Відгук 2", "Відгук 3")):
+            user = get_user_model().objects.create_user(
+                username=f"reviewer-{index}",
+                password="B0b!C4t#R8v$M2x",
+            )
+            DishRating.objects.create(
+                user=user,
+                dish=dish,
+                score=5,
+                comment=comment,
+            )
+
+        self.client.post("/", self.registration_data)
+        response = self.client.get(reverse("menu"))
+
+        self.assertContains(response, "Відгук 3")
+        self.assertContains(response, "Відгук 2")
+        self.assertNotContains(response, "Відгук 1")
+        self.assertEqual(response.content.count(b'class="dish-review"'), 2)
+
     def test_rating_can_be_added_and_updated_by_user(self):
         dish = Dish.objects.create(
             name="Борщ",

@@ -70,16 +70,14 @@
                                             <span class="dish-rating-count">({{ dish.rating_count }} оцінок)</span>
                                         </summary>
                                         <div class="dish-review-list">
-                                            {% for review in dish.ratings.all %}
-                                                {% if review.comment %}
-                                                    <article class="dish-review">
-                                                        <strong>
-                                                            {{ review.user.get_full_name|default:review.user.get_username }}
-                                                            {% if review.score %}· {{ review.score }} ★{% endif %}
-                                                        </strong>
-                                                        <p>{{ review.comment|linebreaksbr }}</p>
-                                                    </article>
-                                                {% endif %}
+                                            {% for review in dish.comment_reviews|slice:":2" %}
+                                                <article class="dish-review">
+                                                    <strong>
+                                                        {{ review.user.get_full_name|default:review.user.get_username }}
+                                                        {% if review.score %}· {{ review.score }} ★{% endif %}
+                                                    </strong>
+                                                    <p>{{ review.comment|linebreaksbr }}</p>
+                                                </article>
                                             {% endfor %}
                                         </div>
                                     </details>

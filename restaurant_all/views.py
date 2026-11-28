@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -146,7 +146,15 @@ def menu_page(request):
     )
     if selected_category:
         dishes = dishes.filter(category=selected_category)
-    dishes = dishes.prefetch_related("ratings__user")
+    dishes = dishes.prefetch_related(
+        Prefetch(
+            "ratings",
+            queryset=DishRating.objects.exclude(comment="")
+            .select_related("user")
+            .order_by("-pk"),
+            to_attr="comment_reviews",
+        )
+    )
 
     return render(
         request,

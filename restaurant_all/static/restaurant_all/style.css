@@ -675,6 +675,12 @@ button:hover {
 .destination-card p {
     color: #716d66;
 }
+.dish-detail .dish-availability--available {
+    color: #287a45;
+}
+.dish-detail .dish-availability--unavailable {
+    color: #a33b32;
+}
 .rating-card {
     width: min(1120px, 100%);
 }

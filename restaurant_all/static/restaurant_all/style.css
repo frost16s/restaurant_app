@@ -466,6 +466,10 @@ button:hover {
 .dish-card-content h2 {
     margin: 0;
 }
+.menu-dish-card .dish-card-content h2 {
+    min-height: 2.5em;
+    line-height: 1.25;
+}
 .dish-price,
 .dish-detail-price {
     margin: 10px 0;

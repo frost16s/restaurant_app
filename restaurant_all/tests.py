@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -257,12 +258,17 @@ class AuthenticationFlowTests(TestCase):
             name="Борщ",
             description="Домашній рецепт",
             price="120.00",
+            image="dish_images/Banosh.webp",
         )
         self.client.post("/", self.registration_data)
 
         response = self.client.get(reverse("menu"))
 
         self.assertContains(response, "Борщ")
+        self.assertContains(
+            response,
+            f'src="{settings.MEDIA_URL}dish_images/Banosh.webp"',
+        )
         self.assertContains(response, "120.00")
         self.assertContains(response, "Є в наявності")
         self.assertContains(response, reverse("dish_detail", args=[dish.pk]))
